@@ -1,0 +1,1418 @@
+
+          -------------------------------------------------------
+          Amber 14 SANDER                              2014
+          -------------------------------------------------------
+
+| PMEMD implementation of SANDER, Release 14
+
+| Run on 06/01/2016 at 11:34:13
+
+|   Executable path: pmemd.cuda
+| Working directory: /mnt/lustre_fs/users/workshop_1/joebaker/day7/day7/trpcage/runsim/equil
+|          Hostname: gpu-compute2
+
+  [-O]verwriting output
+
+File Assignments:
+|   MDIN: equil.4.in                                                            
+|  MDOUT: equil.4.out                                                           
+| INPCRD: equil.3.rst7                                                          
+|   PARM: ../../tleap/trpcage.parm7                                             
+| RESTRT: equil.4.rst7                                                          
+|   REFC: equil.3.rst7                                                          
+|  MDVEL: mdvel                                                                 
+|   MDEN: mden                                                                  
+|  MDCRD: equil.4.nc                                                            
+| MDINFO: mdinfo                                                                
+|  MDFRC: mdfrc                                                                 
+
+
+ Here is the input file:
+
+NPT equilibration                                                              
+ &cntrl                                                                        
+  imin=0, ! Not a minimization run                                             
+  ntx=5, ! Read coordinates and velocities from restart file                   
+  irest=1, ! Restart from previous, expecting velocities                       
+  ntxo=2, ! The final coords, velocities, box size in NetCDF                   
+  ioutfm=1, ! Print mdcrd to NetCDF format                                     
+  ntwr=100000, ! Very high value for how often restart file is written         
+  nstlim=50000, ! 100 ps of NPT equilibration                                  
+  dt=0.002, ! Time step in picoseconds, so this is 2 fs                        
+  ntf=2, ! Do not calc the force for SHAKE constrained bonds                   
+  ntc=2, ! Use SHAKE for all hydrogen bonds                                    
+  temp0=300.0, ! Thermostat temperature, Run at this temperature               
+  ntpr=1000, ! How often to print                                              
+  ntwx=1000, ! Write coordinates every 2 ps                                    
+  cut=8.0, ! Nonbonded cutoff                                                  
+  ntb=2, ! Use PBC and constant pressure                                       
+  ntp=1, ! Isotropic pressure scaling                                          
+  barostat=2, ! Use Monte Carlo barostat                                       
+  taup=1, ! Pressure relaxation time                                           
+  ntt=3, ! Use the Lengevin thermostat                                         
+  gamma_ln=1.0, ! Frequency of collisions for thermostat                       
+  ig=-1, ! Randomize seed for Langevin thermostat                              
+  ntr=1, ! turn on restraints                                                  
+  restraint_wt=1.25, ! force constant for restraints                           
+  restraintmask=':1-20,@CA,C,O,N', ! restrained atoms                          
+ /                                                                             
+
+
+Note: ig = -1. Setting random seed to    42926 based on wallclock time in 
+      microseconds.
+ 
+|--------------------- INFORMATION ----------------------
+| GPU (CUDA) Version of PMEMD in use: NVIDIA GPU IN USE.
+|                    Version 14.0.1
+| 
+|                      06/20/2014
+| 
+| Implementation by:
+|                    Ross C. Walker     (SDSC)
+|                    Scott Le Grand     (nVIDIA)
+| 
+| CAUTION: The CUDA code is currently experimental.
+|          You use it at your own risk. Be sure to
+|          check ALL results carefully.
+| 
+| Precision model in use:
+|      [SPFP] - Mixed Single/Double/Fixed Point Precision.
+|               (Default)
+| 
+|--------------------------------------------------------
+ 
+|----------------- CITATION INFORMATION -----------------
+|
+|    When publishing work that utilized the CUDA version
+|    of AMBER, please cite the following in addition to
+|    the regular AMBER citations:
+|
+|  - Romelia Salomon-Ferrer; Andreas W. Goetz; Duncan
+|    Poole; Scott Le Grand; Ross C. Walker "Routine
+|    microsecond molecular dynamics simulations with
+|    AMBER - Part II: Particle Mesh Ewald", J. Chem.
+|    Theory Comput., 2013, 9 (9), pp3878-3888,
+|    DOI: 10.1021/ct400314y.
+|
+|  - Andreas W. Goetz; Mark J. Williamson; Dong Xu;
+|    Duncan Poole; Scott Le Grand; Ross C. Walker
+|    "Routine microsecond molecular dynamics simulations
+|    with AMBER - Part I: Generalized Born", J. Chem.
+|    Theory Comput., 2012, 8 (5), pp1542-1555.
+|
+|  - Scott Le Grand; Andreas W. Goetz; Ross C. Walker
+|    "SPFP: Speed without compromise - a mixed precision
+|    model for GPU accelerated molecular dynamics
+|    simulations.", Comp. Phys. Comm., 2013, 184
+|    pp374-380, DOI: 10.1016/j.cpc.2012.09.022
+|
+|--------------------------------------------------------
+ 
+|------------------- GPU DEVICE INFO --------------------
+|
+|            CUDA_VISIBLE_DEVICES: 0
+|   CUDA Capable Devices Detected:      1
+|           CUDA Device ID in use:      0
+|                CUDA Device Name: GeForce GTX TITAN X
+|     CUDA Device Global Mem Size:  12287 MB
+| CUDA Device Num Multiprocessors:     24
+|           CUDA Device Core Freq:   1.08 GHz
+|
+|--------------------------------------------------------
+ 
+ 
+| Conditional Compilation Defines Used:
+| PUBFFT
+| BINTRAJ
+| CUDA
+| EMIL
+
+| Largest sphere to fit in unit cell has radius =    17.272
+
+| New format PARM file being parsed.
+| Version =    1.000 Date = 06/01/16 Time = 08:32:47
+
+| Note: 1-4 EEL scale factors are being read from the topology file.
+
+| Note: 1-4 VDW scale factors are being read from the topology file.
+| Duplicated    0 dihedrals
+
+| Duplicated    0 dihedrals
+
+--------------------------------------------------------------------------------
+   1.  RESOURCE   USE: 
+--------------------------------------------------------------------------------
+
+ getting box info from netcdf restart file
+ NATOM  =    5771 NTYPES =      15 NBONH =    5616 MBONA  =     160
+ NTHETH =     346 MTHETA =     219 NPHIH =     700 MPHIA  =     653
+ NHPARM =       0 NPARM  =       0 NNB   =    8990 NRES   =    1843
+ NBONA  =     160 NTHETA =     219 NPHIA =     653 NUMBND =      55
+ NUMANG =     124 NPTRA  =     137 NATYP =      29 NPHB   =       1
+ IFBOX  =       2 NMXRS  =      24 IFCAP =       0 NEXTRA =       0
+ NCOPY  =       0
+
+| Coordinate Index Table dimensions:     8    8    8
+| Direct force subcell size =     5.2883    5.2883    5.2883
+
+     BOX TYPE: TRUNCATED OCTAHEDRON
+
+--------------------------------------------------------------------------------
+   2.  CONTROL  DATA  FOR  THE  RUN
+--------------------------------------------------------------------------------
+
+default_name                                                                    
+
+General flags:
+     imin    =       0, nmropt  =       0
+
+Nature and format of input:
+     ntx     =       5, irest   =       1, ntrx    =       1
+
+Nature and format of output:
+     ntxo    =       2, ntpr    =    1000, ntrx    =       1, ntwr    =  100000
+     iwrap   =       0, ntwx    =    1000, ntwv    =       0, ntwe    =       0
+     ioutfm  =       1, ntwprt  =       0, idecomp =       0, rbornstat=      0
+
+Potential function:
+     ntf     =       2, ntb     =       2, igb     =       0, nsnb    =      25
+     ipol    =       0, gbsa    =       0, iesp    =       0
+     dielc   =   1.00000, cut     =   8.00000, intdiel =   1.00000
+
+Frozen or restrained atoms:
+     ibelly  =       0, ntr     =       1
+     restraint_wt =   1.25000
+
+Molecular dynamics:
+     nstlim  =     50000, nscm    =         0, nrespa  =         1
+     t       =   0.00000, dt      =   0.00200, vlimit  =  -1.00000
+
+Langevin dynamics temperature regulation:
+     ig      =   42926
+     temp0   = 300.00000, tempi   =   0.00000, gamma_ln=   1.00000
+
+Pressure regulation:
+     ntp     =       1
+     pres0   =   1.00000, comp    =  44.60000, taup    =   1.00000
+     Monte-Carlo Barostat:
+     mcbarint  =     100
+
+SHAKE:
+     ntc     =       2, jfastw  =       0
+     tol     =   0.00001
+
+| Intermolecular bonds treatment:
+|     no_intermolecular_bonds =       1
+
+| Energy averages sample interval:
+|     ene_avg_sampling =    1000
+
+Ewald parameters:
+     verbose =       0, ew_type =       0, nbflag  =       1, use_pme =       1
+     vdwmeth =       1, eedmeth =       1, netfrc  =       1
+     Box X =   42.307   Box Y =   42.307   Box Z =   42.307
+     Alpha =  109.471   Beta  =  109.471   Gamma =  109.471
+     NFFT1 =   48       NFFT2 =   48       NFFT3 =   48
+     Cutoff=    8.000   Tol   =0.100E-04
+     Ewald Coefficient =  0.34864
+     Interpolation order =    4
+
+    LOADING THE CONSTRAINED ATOMS AS GROUPS
+
+
+   5.  REFERENCE ATOM COORDINATES
+
+  default_name                                                                    
+     Mask :1-20,@CA,C,O,N; matches    80 atoms
+
+--------------------------------------------------------------------------------
+   3.  ATOMIC COORDINATES AND VELOCITIES
+--------------------------------------------------------------------------------
+
+default_name                                                                    
+ begin time read from input coords =   500.000 ps
+
+ 
+ Number of triangulated 3-point waters found:     1822
+
+     Sum of charges from parm topology file =  -0.00000001
+     Forcing neutrality...
+
+| Dynamic Memory, Types Used:
+| Reals              371488
+| Integers           173854
+
+| Nonbonded Pairs Initial Allocation:      963901
+
+| GPU memory information (estimate):
+| KB of GPU memory in use:     38273
+| KB of CPU memory in use:     10145
+
+--------------------------------------------------------------------------------
+   4.  RESULTS
+--------------------------------------------------------------------------------
+
+ ---------------------------------------------------
+ APPROXIMATING switch and d/dx switch using CUBIC SPLINE INTERPOLATION
+ using   5000.0 points per unit in tabled values
+ TESTING RELATIVE ERROR over r ranging from 0.0 to cutoff
+| CHECK switch(x): max rel err =   0.2738E-14   at   2.422500
+| CHECK d/dx switch(x): max rel err =   0.8332E-11   at   2.782960
+ ---------------------------------------------------
+|---------------------------------------------------
+| APPROXIMATING direct energy using CUBIC SPLINE INTERPOLATION
+|  with   50.0 points per unit in tabled values
+| Relative Error Limit not exceeded for r .gt.   2.47
+| APPROXIMATING direct force using CUBIC SPLINE INTERPOLATION
+|  with   50.0 points per unit in tabled values
+| Relative Error Limit not exceeded for r .gt.   2.89
+|---------------------------------------------------
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =     1000   TIME(PS) =     502.000  TEMP(K) =   298.55  PRESS =     0.0
+ Etot   =    -14587.8935  EKtot   =      3469.8057  EPtot      =    -18057.6992
+ BOND   =        51.6516  ANGLE   =       156.5400  DIHED      =       251.9562
+ 1-4 NB =        71.0496  1-4 EEL =       886.4241  VDWAALS    =      2371.9198
+ EELEC  =    -21854.6442  EHBOND  =         0.0000  RESTRAINT  =         7.4037
+ EAMBER (non-restraint)  =    -18065.1029
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57500.4797
+                                                    Density    =         1.0117
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =     2000   TIME(PS) =     504.000  TEMP(K) =   297.26  PRESS =     0.0
+ Etot   =    -14622.1171  EKtot   =      3454.8005  EPtot      =    -18076.9177
+ BOND   =        59.0997  ANGLE   =       164.2228  DIHED      =       251.8450
+ 1-4 NB =        67.7947  1-4 EEL =       867.5314  VDWAALS    =      2462.2231
+ EELEC  =    -21962.4753  EHBOND  =         0.0000  RESTRAINT  =        12.8408
+ EAMBER (non-restraint)  =    -18089.7584
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57878.5850
+                                                    Density    =         1.0051
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =     3000   TIME(PS) =     506.000  TEMP(K) =   297.76  PRESS =     0.0
+ Etot   =    -14640.7804  EKtot   =      3460.5383  EPtot      =    -18101.3187
+ BOND   =        47.0812  ANGLE   =       158.1584  DIHED      =       249.3701
+ 1-4 NB =        66.9678  1-4 EEL =       862.5251  VDWAALS    =      2415.7346
+ EELEC  =    -21910.1253  EHBOND  =         0.0000  RESTRAINT  =         8.9693
+ EAMBER (non-restraint)  =    -18110.2880
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57630.3790
+                                                    Density    =         1.0094
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =     4000   TIME(PS) =     508.000  TEMP(K) =   304.04  PRESS =     0.0
+ Etot   =    -14440.1432  EKtot   =      3533.5764  EPtot      =    -17973.7196
+ BOND   =        51.2960  ANGLE   =       177.8593  DIHED      =       253.5672
+ 1-4 NB =        69.1626  1-4 EEL =       858.4879  VDWAALS    =      2413.5319
+ EELEC  =    -21810.0077  EHBOND  =         0.0000  RESTRAINT  =        12.3831
+ EAMBER (non-restraint)  =    -17986.1027
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58033.6391
+                                                    Density    =         1.0024
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =     5000   TIME(PS) =     510.000  TEMP(K) =   304.60  PRESS =     0.0
+ Etot   =    -14345.3373  EKtot   =      3540.1311  EPtot      =    -17885.4684
+ BOND   =        61.6494  ANGLE   =       168.3559  DIHED      =       259.6211
+ 1-4 NB =        65.8209  1-4 EEL =       857.2055  VDWAALS    =      2327.4674
+ EELEC  =    -21637.5108  EHBOND  =         0.0000  RESTRAINT  =        11.9221
+ EAMBER (non-restraint)  =    -17897.3905
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58568.4367
+                                                    Density    =         0.9932
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =     6000   TIME(PS) =     512.000  TEMP(K) =   306.63  PRESS =     0.0
+ Etot   =    -14460.8576  EKtot   =      3563.7058  EPtot      =    -18024.5634
+ BOND   =        64.2414  ANGLE   =       142.9951  DIHED      =       253.0545
+ 1-4 NB =        69.1241  1-4 EEL =       850.7703  VDWAALS    =      2431.7102
+ EELEC  =    -21845.8614  EHBOND  =         0.0000  RESTRAINT  =         9.4023
+ EAMBER (non-restraint)  =    -18033.9657
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58345.8316
+                                                    Density    =         0.9970
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =     7000   TIME(PS) =     514.000  TEMP(K) =   295.90  PRESS =     0.0
+ Etot   =    -14396.4049  EKtot   =      3439.0039  EPtot      =    -17835.4088
+ BOND   =        56.1360  ANGLE   =       168.9567  DIHED      =       260.6066
+ 1-4 NB =        67.8431  1-4 EEL =       876.4069  VDWAALS    =      2326.7853
+ EELEC  =    -21605.2134  EHBOND  =         0.0000  RESTRAINT  =        13.0701
+ EAMBER (non-restraint)  =    -17848.4789
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58186.1624
+                                                    Density    =         0.9997
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =     8000   TIME(PS) =     516.000  TEMP(K) =   302.88  PRESS =     0.0
+ Etot   =    -14491.2798  EKtot   =      3520.0559  EPtot      =    -18011.3357
+ BOND   =        63.3959  ANGLE   =       167.3074  DIHED      =       246.0216
+ 1-4 NB =        60.8032  1-4 EEL =       852.9394  VDWAALS    =      2310.8443
+ EELEC  =    -21724.4981  EHBOND  =         0.0000  RESTRAINT  =        11.8506
+ EAMBER (non-restraint)  =    -18023.1862
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58228.2206
+                                                    Density    =         0.9990
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =     9000   TIME(PS) =     518.000  TEMP(K) =   295.22  PRESS =     0.0
+ Etot   =    -14532.5526  EKtot   =      3431.1267  EPtot      =    -17963.6793
+ BOND   =        66.9621  ANGLE   =       191.2207  DIHED      =       256.6993
+ 1-4 NB =        66.7018  1-4 EEL =       862.7142  VDWAALS    =      2414.0279
+ EELEC  =    -21835.8671  EHBOND  =         0.0000  RESTRAINT  =        13.8616
+ EAMBER (non-restraint)  =    -17977.5409
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57763.6216
+                                                    Density    =         1.0071
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    10000   TIME(PS) =     520.000  TEMP(K) =   303.38  PRESS =     0.0
+ Etot   =    -14576.1223  EKtot   =      3525.8584  EPtot      =    -18101.9807
+ BOND   =        59.2086  ANGLE   =       165.1110  DIHED      =       249.9534
+ 1-4 NB =        68.6733  1-4 EEL =       870.4054  VDWAALS    =      2386.6103
+ EELEC  =    -21912.0737  EHBOND  =         0.0000  RESTRAINT  =        10.1311
+ EAMBER (non-restraint)  =    -18112.1118
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57711.9545
+                                                    Density    =         1.0080
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    11000   TIME(PS) =     522.000  TEMP(K) =   293.56  PRESS =     0.0
+ Etot   =    -14494.3108  EKtot   =      3411.8008  EPtot      =    -17906.1116
+ BOND   =        60.6870  ANGLE   =       172.8349  DIHED      =       256.7156
+ 1-4 NB =        67.5776  1-4 EEL =       863.6481  VDWAALS    =      2427.1595
+ EELEC  =    -21764.5136  EHBOND  =         0.0000  RESTRAINT  =         9.7794
+ EAMBER (non-restraint)  =    -17915.8910
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58011.7719
+                                                    Density    =         1.0028
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    12000   TIME(PS) =     524.000  TEMP(K) =   298.99  PRESS =     0.0
+ Etot   =    -14469.1255  EKtot   =      3474.8308  EPtot      =    -17943.9563
+ BOND   =        61.4860  ANGLE   =       149.0695  DIHED      =       263.3846
+ 1-4 NB =        62.1590  1-4 EEL =       857.6477  VDWAALS    =      2465.6890
+ EELEC  =    -21819.2947  EHBOND  =         0.0000  RESTRAINT  =        15.9026
+ EAMBER (non-restraint)  =    -17959.8589
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58012.8436
+                                                    Density    =         1.0027
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    13000   TIME(PS) =     526.000  TEMP(K) =   298.35  PRESS =     0.0
+ Etot   =    -14539.3856  EKtot   =      3467.4517  EPtot      =    -18006.8372
+ BOND   =        52.7672  ANGLE   =       171.6523  DIHED      =       254.7129
+ 1-4 NB =        70.0064  1-4 EEL =       844.6881  VDWAALS    =      2504.4998
+ EELEC  =    -21915.3988  EHBOND  =         0.0000  RESTRAINT  =        10.2348
+ EAMBER (non-restraint)  =    -18017.0720
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58546.4132
+                                                    Density    =         0.9936
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    14000   TIME(PS) =     528.000  TEMP(K) =   295.33  PRESS =     0.0
+ Etot   =    -14668.3482  EKtot   =      3432.4021  EPtot      =    -18100.7503
+ BOND   =        60.2701  ANGLE   =       154.0220  DIHED      =       245.1586
+ 1-4 NB =        71.6348  1-4 EEL =       871.6021  VDWAALS    =      2398.5964
+ EELEC  =    -21915.5761  EHBOND  =         0.0000  RESTRAINT  =        13.5419
+ EAMBER (non-restraint)  =    -18114.2922
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58321.9510
+                                                    Density    =         0.9974
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    15000   TIME(PS) =     530.000  TEMP(K) =   298.15  PRESS =     0.0
+ Etot   =    -14475.2690  EKtot   =      3465.0867  EPtot      =    -17940.3557
+ BOND   =        63.7811  ANGLE   =       159.9880  DIHED      =       247.7003
+ 1-4 NB =        67.3220  1-4 EEL =       854.6144  VDWAALS    =      2430.3798
+ EELEC  =    -21772.4065  EHBOND  =         0.0000  RESTRAINT  =         8.2653
+ EAMBER (non-restraint)  =    -17948.6209
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58516.3632
+                                                    Density    =         0.9941
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    16000   TIME(PS) =     532.000  TEMP(K) =   301.99  PRESS =     0.0
+ Etot   =    -14482.1345  EKtot   =      3509.7551  EPtot      =    -17991.8896
+ BOND   =        63.2921  ANGLE   =       156.5335  DIHED      =       250.8903
+ 1-4 NB =        70.8307  1-4 EEL =       864.2874  VDWAALS    =      2504.7163
+ EELEC  =    -21914.5691  EHBOND  =         0.0000  RESTRAINT  =        12.1293
+ EAMBER (non-restraint)  =    -18004.0189
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57878.2081
+                                                    Density    =         1.0051
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    17000   TIME(PS) =     534.000  TEMP(K) =   299.77  PRESS =     0.0
+ Etot   =    -14559.9113  EKtot   =      3483.9866  EPtot      =    -18043.8979
+ BOND   =        57.2762  ANGLE   =       159.6380  DIHED      =       249.2461
+ 1-4 NB =        67.8238  1-4 EEL =       871.3197  VDWAALS    =      2525.9896
+ EELEC  =    -21984.3006  EHBOND  =         0.0000  RESTRAINT  =         9.1092
+ EAMBER (non-restraint)  =    -18053.0071
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57730.6279
+                                                    Density    =         1.0076
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    18000   TIME(PS) =     536.000  TEMP(K) =   298.86  PRESS =     0.0
+ Etot   =    -14568.4882  EKtot   =      3473.3428  EPtot      =    -18041.8309
+ BOND   =        58.8832  ANGLE   =       149.4888  DIHED      =       252.1417
+ 1-4 NB =        66.1607  1-4 EEL =       865.3173  VDWAALS    =      2442.2452
+ EELEC  =    -21889.8424  EHBOND  =         0.0000  RESTRAINT  =        13.7745
+ EAMBER (non-restraint)  =    -18055.6054
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57896.8711
+                                                    Density    =         1.0047
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    19000   TIME(PS) =     538.000  TEMP(K) =   301.28  PRESS =     0.0
+ Etot   =    -14473.9348  EKtot   =      3501.5366  EPtot      =    -17975.4714
+ BOND   =        62.0395  ANGLE   =       164.1092  DIHED      =       256.9310
+ 1-4 NB =        70.8579  1-4 EEL =       864.5755  VDWAALS    =      2412.3304
+ EELEC  =    -21818.8122  EHBOND  =         0.0000  RESTRAINT  =        12.4974
+ EAMBER (non-restraint)  =    -17987.9688
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57884.5492
+                                                    Density    =         1.0050
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    20000   TIME(PS) =     540.000  TEMP(K) =   301.38  PRESS =     0.0
+ Etot   =    -14420.4212  EKtot   =      3502.7100  EPtot      =    -17923.1311
+ BOND   =        62.8839  ANGLE   =       167.5668  DIHED      =       255.5994
+ 1-4 NB =        64.7747  1-4 EEL =       859.4608  VDWAALS    =      2520.2718
+ EELEC  =    -21868.7443  EHBOND  =         0.0000  RESTRAINT  =        15.0556
+ EAMBER (non-restraint)  =    -17938.1868
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57840.6542
+                                                    Density    =         1.0057
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    21000   TIME(PS) =     542.000  TEMP(K) =   300.76  PRESS =     0.0
+ Etot   =    -14498.1934  EKtot   =      3495.4614  EPtot      =    -17993.6548
+ BOND   =        66.1218  ANGLE   =       160.6964  DIHED      =       253.6831
+ 1-4 NB =        65.8468  1-4 EEL =       868.5724  VDWAALS    =      2445.0577
+ EELEC  =    -21863.2543  EHBOND  =         0.0000  RESTRAINT  =         9.6213
+ EAMBER (non-restraint)  =    -18003.2762
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57592.4078
+                                                    Density    =         1.0101
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    22000   TIME(PS) =     544.000  TEMP(K) =   300.52  PRESS =     0.0
+ Etot   =    -14474.6149  EKtot   =      3492.6545  EPtot      =    -17967.2695
+ BOND   =        64.5937  ANGLE   =       168.3171  DIHED      =       251.1455
+ 1-4 NB =        67.8324  1-4 EEL =       867.9081  VDWAALS    =      2360.8600
+ EELEC  =    -21756.9137  EHBOND  =         0.0000  RESTRAINT  =         8.9875
+ EAMBER (non-restraint)  =    -17976.2570
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58093.4536
+                                                    Density    =         1.0013
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    23000   TIME(PS) =     546.000  TEMP(K) =   301.94  PRESS =     0.0
+ Etot   =    -14374.9364  EKtot   =      3509.1890  EPtot      =    -17884.1253
+ BOND   =        74.4007  ANGLE   =       154.3304  DIHED      =       247.5061
+ 1-4 NB =        74.4769  1-4 EEL =       864.6961  VDWAALS    =      2482.9293
+ EELEC  =    -21789.5280  EHBOND  =         0.0000  RESTRAINT  =         7.0632
+ EAMBER (non-restraint)  =    -17891.1885
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58200.5132
+                                                    Density    =         0.9995
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    24000   TIME(PS) =     548.000  TEMP(K) =   298.81  PRESS =     0.0
+ Etot   =    -14590.2688  EKtot   =      3472.7773  EPtot      =    -18063.0461
+ BOND   =        73.5144  ANGLE   =       148.6340  DIHED      =       239.5288
+ 1-4 NB =        66.3562  1-4 EEL =       872.4870  VDWAALS    =      2427.1187
+ EELEC  =    -21900.8711  EHBOND  =         0.0000  RESTRAINT  =        10.1860
+ EAMBER (non-restraint)  =    -18073.2321
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57928.6473
+                                                    Density    =         1.0042
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    25000   TIME(PS) =     550.000  TEMP(K) =   301.39  PRESS =     0.0
+ Etot   =    -14498.6568  EKtot   =      3502.7373  EPtot      =    -18001.3941
+ BOND   =        71.8038  ANGLE   =       145.1185  DIHED      =       255.9889
+ 1-4 NB =        66.8659  1-4 EEL =       872.8928  VDWAALS    =      2399.3878
+ EELEC  =    -21827.4677  EHBOND  =         0.0000  RESTRAINT  =        14.0159
+ EAMBER (non-restraint)  =    -18015.4100
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57914.0148
+                                                    Density    =         1.0044
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    26000   TIME(PS) =     552.000  TEMP(K) =   300.11  PRESS =     0.0
+ Etot   =    -14545.3891  EKtot   =      3487.8933  EPtot      =    -18033.2824
+ BOND   =        58.1349  ANGLE   =       172.0392  DIHED      =       241.2446
+ 1-4 NB =        76.7327  1-4 EEL =       870.0162  VDWAALS    =      2342.5436
+ EELEC  =    -21802.5730  EHBOND  =         0.0000  RESTRAINT  =         8.5795
+ EAMBER (non-restraint)  =    -18041.8619
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57449.2199
+                                                    Density    =         1.0126
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    27000   TIME(PS) =     554.000  TEMP(K) =   301.51  PRESS =     0.0
+ Etot   =    -14463.0055  EKtot   =      3504.1475  EPtot      =    -17967.1529
+ BOND   =        41.8440  ANGLE   =       158.5847  DIHED      =       260.2267
+ 1-4 NB =        67.8762  1-4 EEL =       860.4860  VDWAALS    =      2376.2609
+ EELEC  =    -21746.5640  EHBOND  =         0.0000  RESTRAINT  =        14.1326
+ EAMBER (non-restraint)  =    -17981.2855
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57951.4454
+                                                    Density    =         1.0038
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    28000   TIME(PS) =     556.000  TEMP(K) =   303.85  PRESS =     0.0
+ Etot   =    -14549.0967  EKtot   =      3531.3379  EPtot      =    -18080.4346
+ BOND   =        67.2092  ANGLE   =       141.1788  DIHED      =       260.2398
+ 1-4 NB =        66.2443  1-4 EEL =       852.6808  VDWAALS    =      2567.5417
+ EELEC  =    -22047.2938  EHBOND  =         0.0000  RESTRAINT  =        11.7645
+ EAMBER (non-restraint)  =    -18092.1991
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57134.1253
+                                                    Density    =         1.0182
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    29000   TIME(PS) =     558.000  TEMP(K) =   296.10  PRESS =     0.0
+ Etot   =    -14558.6872  EKtot   =      3441.2878  EPtot      =    -17999.9750
+ BOND   =        58.2287  ANGLE   =       161.0765  DIHED      =       246.6309
+ 1-4 NB =        71.3928  1-4 EEL =       871.6113  VDWAALS    =      2476.1162
+ EELEC  =    -21897.0500  EHBOND  =         0.0000  RESTRAINT  =        12.0185
+ EAMBER (non-restraint)  =    -18011.9935
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57495.1140
+                                                    Density    =         1.0118
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    30000   TIME(PS) =     560.000  TEMP(K) =   296.86  PRESS =     0.0
+ Etot   =    -14627.0789  EKtot   =      3450.1001  EPtot      =    -18077.1790
+ BOND   =        56.0904  ANGLE   =       152.7318  DIHED      =       249.7090
+ 1-4 NB =        70.3314  1-4 EEL =       873.6319  VDWAALS    =      2430.0987
+ EELEC  =    -21919.9665  EHBOND  =         0.0000  RESTRAINT  =        10.1942
+ EAMBER (non-restraint)  =    -18087.3732
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57758.4448
+                                                    Density    =         1.0071
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    31000   TIME(PS) =     562.000  TEMP(K) =   299.55  PRESS =     0.0
+ Etot   =    -14531.1151  EKtot   =      3481.3943  EPtot      =    -18012.5094
+ BOND   =        64.3130  ANGLE   =       156.7269  DIHED      =       252.8244
+ 1-4 NB =        67.0701  1-4 EEL =       837.0134  VDWAALS    =      2344.2065
+ EELEC  =    -21745.5569  EHBOND  =         0.0000  RESTRAINT  =        10.8932
+ EAMBER (non-restraint)  =    -18023.4026
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57893.5658
+                                                    Density    =         1.0048
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    32000   TIME(PS) =     564.000  TEMP(K) =   300.13  PRESS =     0.0
+ Etot   =    -14468.4207  EKtot   =      3488.1133  EPtot      =    -17956.5339
+ BOND   =        68.6837  ANGLE   =       156.7719  DIHED      =       250.7639
+ 1-4 NB =        66.3441  1-4 EEL =       857.3286  VDWAALS    =      2570.8728
+ EELEC  =    -21939.0506  EHBOND  =         0.0000  RESTRAINT  =        11.7517
+ EAMBER (non-restraint)  =    -17968.2856
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57435.6154
+                                                    Density    =         1.0128
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    33000   TIME(PS) =     566.000  TEMP(K) =   299.92  PRESS =     0.0
+ Etot   =    -14612.1496  EKtot   =      3485.7451  EPtot      =    -18097.8947
+ BOND   =        59.7476  ANGLE   =       170.5857  DIHED      =       256.6134
+ 1-4 NB =        63.8886  1-4 EEL =       855.6664  VDWAALS    =      2471.5657
+ EELEC  =    -21985.6316  EHBOND  =         0.0000  RESTRAINT  =         9.6693
+ EAMBER (non-restraint)  =    -18107.5640
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58185.0899
+                                                    Density    =         0.9998
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    34000   TIME(PS) =     568.000  TEMP(K) =   298.10  PRESS =     0.0
+ Etot   =    -14539.7264  EKtot   =      3464.5464  EPtot      =    -18004.2728
+ BOND   =        65.9850  ANGLE   =       156.2937  DIHED      =       254.7878
+ 1-4 NB =        64.9844  1-4 EEL =       857.8712  VDWAALS    =      2409.7293
+ EELEC  =    -21827.1203  EHBOND  =         0.0000  RESTRAINT  =        13.1962
+ EAMBER (non-restraint)  =    -18017.4690
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58257.8635
+                                                    Density    =         0.9985
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    35000   TIME(PS) =     570.000  TEMP(K) =   295.84  PRESS =     0.0
+ Etot   =    -14445.7039  EKtot   =      3438.2480  EPtot      =    -17883.9520
+ BOND   =        44.2897  ANGLE   =       149.1241  DIHED      =       248.2054
+ 1-4 NB =        69.5677  1-4 EEL =       865.7624  VDWAALS    =      2443.0282
+ EELEC  =    -21714.6617  EHBOND  =         0.0000  RESTRAINT  =        10.7322
+ EAMBER (non-restraint)  =    -17894.6842
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58082.8862
+                                                    Density    =         1.0015
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    36000   TIME(PS) =     572.000  TEMP(K) =   304.49  PRESS =     0.0
+ Etot   =    -14311.9714  EKtot   =      3538.8025  EPtot      =    -17850.7739
+ BOND   =        48.9907  ANGLE   =       152.8073  DIHED      =       249.3279
+ 1-4 NB =        72.6589  1-4 EEL =       856.1208  VDWAALS    =      2455.2863
+ EELEC  =    -21695.7871  EHBOND  =         0.0000  RESTRAINT  =         9.8213
+ EAMBER (non-restraint)  =    -17860.5952
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58954.8808
+                                                    Density    =         0.9867
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    37000   TIME(PS) =     574.000  TEMP(K) =   303.61  PRESS =     0.0
+ Etot   =    -14363.2880  EKtot   =      3528.6357  EPtot      =    -17891.9237
+ BOND   =        53.7177  ANGLE   =       149.1285  DIHED      =       265.8301
+ 1-4 NB =        71.1333  1-4 EEL =       868.7708  VDWAALS    =      2481.6195
+ EELEC  =    -21791.8258  EHBOND  =         0.0000  RESTRAINT  =         9.7022
+ EAMBER (non-restraint)  =    -17901.6260
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58591.0506
+                                                    Density    =         0.9928
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    38000   TIME(PS) =     576.000  TEMP(K) =   296.90  PRESS =     0.0
+ Etot   =    -14555.8696  EKtot   =      3450.5789  EPtot      =    -18006.4485
+ BOND   =        66.5452  ANGLE   =       147.7798  DIHED      =       242.9022
+ 1-4 NB =        59.6783  1-4 EEL =       857.0888  VDWAALS    =      2353.1452
+ EELEC  =    -21746.9350  EHBOND  =         0.0000  RESTRAINT  =        13.3471
+ EAMBER (non-restraint)  =    -18019.7955
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58302.8811
+                                                    Density    =         0.9977
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    39000   TIME(PS) =     578.000  TEMP(K) =   295.57  PRESS =     0.0
+ Etot   =    -14488.7618  EKtot   =      3435.1460  EPtot      =    -17923.9078
+ BOND   =        60.8412  ANGLE   =       156.8905  DIHED      =       249.4607
+ 1-4 NB =        65.0923  1-4 EEL =       849.8778  VDWAALS    =      2390.6274
+ EELEC  =    -21706.8016  EHBOND  =         0.0000  RESTRAINT  =        10.1039
+ EAMBER (non-restraint)  =    -17934.0117
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57943.5477
+                                                    Density    =         1.0039
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    40000   TIME(PS) =     580.000  TEMP(K) =   301.64  PRESS =     0.0
+ Etot   =    -14488.1112  EKtot   =      3505.7029  EPtot      =    -17993.8140
+ BOND   =        64.4259  ANGLE   =       166.3708  DIHED      =       256.5816
+ 1-4 NB =        70.5658  1-4 EEL =       861.7094  VDWAALS    =      2517.7103
+ EELEC  =    -21941.8654  EHBOND  =         0.0000  RESTRAINT  =        10.6876
+ EAMBER (non-restraint)  =    -18004.5016
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57848.7297
+                                                    Density    =         1.0056
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    41000   TIME(PS) =     582.000  TEMP(K) =   297.38  PRESS =     0.0
+ Etot   =    -14442.3405  EKtot   =      3456.2302  EPtot      =    -17898.5707
+ BOND   =        72.8032  ANGLE   =       174.6670  DIHED      =       253.6505
+ 1-4 NB =        69.8756  1-4 EEL =       866.2598  VDWAALS    =      2382.9443
+ EELEC  =    -21729.4682  EHBOND  =         0.0000  RESTRAINT  =        10.6970
+ EAMBER (non-restraint)  =    -17909.2678
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58072.2273
+                                                    Density    =         1.0017
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    42000   TIME(PS) =     584.000  TEMP(K) =   300.89  PRESS =     0.0
+ Etot   =    -14428.9894  EKtot   =      3497.0217  EPtot      =    -17926.0111
+ BOND   =        46.9517  ANGLE   =       163.5659  DIHED      =       250.4502
+ 1-4 NB =        68.7319  1-4 EEL =       856.8992  VDWAALS    =      2305.8452
+ EELEC  =    -21628.9704  EHBOND  =         0.0000  RESTRAINT  =        10.5152
+ EAMBER (non-restraint)  =    -17936.5264
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58029.5089
+                                                    Density    =         1.0024
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    43000   TIME(PS) =     586.000  TEMP(K) =   300.45  PRESS =     0.0
+ Etot   =    -14504.4887  EKtot   =      3491.8162  EPtot      =    -17996.3049
+ BOND   =        48.5768  ANGLE   =       161.2386  DIHED      =       246.4126
+ 1-4 NB =        69.0255  1-4 EEL =       864.2119  VDWAALS    =      2338.3274
+ EELEC  =    -21733.9341  EHBOND  =         0.0000  RESTRAINT  =         9.8364
+ EAMBER (non-restraint)  =    -18006.1413
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58207.5277
+                                                    Density    =         0.9994
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    44000   TIME(PS) =     588.000  TEMP(K) =   298.85  PRESS =     0.0
+ Etot   =    -14417.6150  EKtot   =      3473.2271  EPtot      =    -17890.8421
+ BOND   =        59.5701  ANGLE   =       144.8953  DIHED      =       255.8882
+ 1-4 NB =        70.8585  1-4 EEL =       868.4842  VDWAALS    =      2432.3303
+ EELEC  =    -21729.0359  EHBOND  =         0.0000  RESTRAINT  =         6.1673
+ EAMBER (non-restraint)  =    -17897.0094
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58878.2408
+                                                    Density    =         0.9880
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+
+ NSTEP =    45000   TIME(PS) =     590.000  TEMP(K) =   298.89  PRESS =     0.0
+ Etot   =    -14496.0492  EKtot   =      3473.7686  EPtot      =    -17969.8177
+ BOND   =        60.1987  ANGLE   =       160.5648  DIHED      =       245.9301
+ 1-4 NB =        67.3498  1-4 EEL =       874.7036  VDWAALS    =      2349.7084
+ EELEC  =    -21739.0550  EHBOND  =         0.0000  RESTRAINT  =        10.7819
+ EAMBER (non-restraint)  =    -17980.5996
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58402.3238
+                                                    Density    =         0.9960
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    46000   TIME(PS) =     592.000  TEMP(K) =   296.26  PRESS =     0.0
+ Etot   =    -14528.7958  EKtot   =      3443.1152  EPtot      =    -17971.9110
+ BOND   =        52.3215  ANGLE   =       150.6562  DIHED      =       244.8321
+ 1-4 NB =        72.0761  1-4 EEL =       878.4339  VDWAALS    =      2370.2133
+ EELEC  =    -21751.3857  EHBOND  =         0.0000  RESTRAINT  =        10.9417
+ EAMBER (non-restraint)  =    -17982.8527
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58230.8697
+                                                    Density    =         0.9990
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    47000   TIME(PS) =     594.000  TEMP(K) =   303.76  PRESS =     0.0
+ Etot   =    -14465.8519  EKtot   =      3530.2693  EPtot      =    -17996.1212
+ BOND   =        61.8223  ANGLE   =       164.6739  DIHED      =       253.2648
+ 1-4 NB =        67.7047  1-4 EEL =       854.2651  VDWAALS    =      2304.2264
+ EELEC  =    -21710.0455  EHBOND  =         0.0000  RESTRAINT  =         7.9672
+ EAMBER (non-restraint)  =    -18004.0884
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58025.3201
+                                                    Density    =         1.0025
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    48000   TIME(PS) =     596.000  TEMP(K) =   301.42  PRESS =     0.0
+ Etot   =    -14430.8400  EKtot   =      3503.1799  EPtot      =    -17934.0200
+ BOND   =        58.8543  ANGLE   =       156.7284  DIHED      =       243.6890
+ 1-4 NB =        71.9918  1-4 EEL =       868.5213  VDWAALS    =      2338.5082
+ EELEC  =    -21683.2077  EHBOND  =         0.0000  RESTRAINT  =        10.8947
+ EAMBER (non-restraint)  =    -17944.9147
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58248.0319
+                                                    Density    =         0.9987
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+
+ NSTEP =    49000   TIME(PS) =     598.000  TEMP(K) =   296.45  PRESS =     0.0
+ Etot   =    -14427.6263  EKtot   =      3445.3140  EPtot      =    -17872.9403
+ BOND   =        58.9925  ANGLE   =       153.3301  DIHED      =       247.9423
+ 1-4 NB =        75.7043  1-4 EEL =       867.3518  VDWAALS    =      2386.2887
+ EELEC  =    -21674.8284  EHBOND  =         0.0000  RESTRAINT  =        12.2785
+ EAMBER (non-restraint)  =    -17885.2188
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58104.8347
+                                                    Density    =         1.0011
+ ------------------------------------------------------------------------------
+
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+| Attempting MC barostat change: Failed
+| Attempting MC barostat change: Succeeded
+
+ NSTEP =    50000   TIME(PS) =     600.000  TEMP(K) =   299.13  PRESS =     0.0
+ Etot   =    -14498.9622  EKtot   =      3476.4683  EPtot      =    -17975.4305
+ BOND   =        51.3178  ANGLE   =       161.2656  DIHED      =       255.7057
+ 1-4 NB =        66.0389  1-4 EEL =       867.6331  VDWAALS    =      2538.0549
+ EELEC  =    -21926.7094  EHBOND  =         0.0000  RESTRAINT  =        11.2629
+ EAMBER (non-restraint)  =    -17986.6934
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     57656.3521
+                                                    Density    =         1.0089
+ ------------------------------------------------------------------------------
+
+
+      A V E R A G E S   O V E R      50 S T E P S
+
+
+ NSTEP =    50000   TIME(PS) =     600.000  TEMP(K) =   299.70  PRESS =     0.0
+ Etot   =    -14497.4284  EKtot   =      3483.1283  EPtot      =    -17980.5568
+ BOND   =        59.6996  ANGLE   =       159.6481  DIHED      =       251.9228
+ 1-4 NB =        68.3477  1-4 EEL =       863.4305  VDWAALS    =      2419.6977
+ EELEC  =    -21814.3019  EHBOND  =         0.0000  RESTRAINT  =        10.9987
+ EAMBER (non-restraint)  =    -17991.5555
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =     58027.1259
+                                                    Density    =         1.0025
+ ------------------------------------------------------------------------------
+
+
+      R M S  F L U C T U A T I O N S
+
+
+ NSTEP =    50000   TIME(PS) =     600.000  TEMP(K) =     2.90  PRESS =     0.0
+ Etot   =        76.0930  EKtot   =        33.7058  EPtot      =        69.0640
+ BOND   =         7.3527  ANGLE   =         9.7550  DIHED      =         5.5684
+ 1-4 NB =         3.3226  1-4 EEL =         8.9230  VDWAALS    =        67.8894
+ EELEC  =       102.1671  EHBOND  =         0.0000  RESTRAINT  =         2.0634
+ EAMBER (non-restraint)  =        67.0006
+ EKCMT  =         0.0000  VIRIAL  =         0.0000  VOLUME     =       359.9722
+                                                    Density    =         0.0062
+ ------------------------------------------------------------------------------
+
+| MC Barostat:        500 volume changes attempted.
+| MC Barostat:        193 changes successful ( 38.60%)
+ ------------------------------------------------------------------------------
+
+--------------------------------------------------------------------------------
+   5.  TIMINGS
+--------------------------------------------------------------------------------
+
+|  NonSetup CPU Time in Major Routines:
+|
+|     Routine           Sec        %
+|     ------------------------------
+|     Nonbond           6.19   27.77
+|     Bond              0.00    0.00
+|     Angle             0.00    0.00
+|     Dihedral          0.00    0.00
+|     Shake             0.42    1.87
+|     RunMD            15.47   69.37
+|     Other             0.22    0.99
+|     ------------------------------
+|     Total            22.29
+
+|  PME Nonbond Pairlist CPU Time:
+|
+|     Routine              Sec        %
+|     ---------------------------------
+|     Set Up Cit           0.00    0.00
+|     Build List           0.00    0.00
+|     ---------------------------------
+|     Total                0.00    0.00
+
+|  PME Direct Force CPU Time:
+|
+|     Routine              Sec        %
+|     ---------------------------------
+|     NonBonded Calc       0.00    0.00
+|     Exclude Masked       0.00    0.00
+|     Other                0.04    0.17
+|     ---------------------------------
+|     Total                0.04    0.17
+
+|  PME Reciprocal Force CPU Time:
+|
+|     Routine              Sec        %
+|     ---------------------------------
+|     1D bspline           0.00    0.00
+|     Grid Charges         0.00    0.00
+|     Scalar Sum           0.00    0.00
+|     Gradient Sum         0.00    0.00
+|     FFT                  0.00    0.00
+|     ---------------------------------
+|     Total                0.00    0.00
+
+|  Final Performance Info:
+|     -----------------------------------------------------
+|     Average timings for last   49000 steps:
+|         Elapsed(s) =      21.80 Per Step(ms) =       0.44
+|             ns/day =     388.39   seconds/ns =     222.46
+|
+|     Average timings for all steps:
+|         Elapsed(s) =      22.29 Per Step(ms) =       0.45
+|             ns/day =     387.56   seconds/ns =     222.93
+|     -----------------------------------------------------
+
+|  Setup CPU time:            1.61 seconds
+|  NonSetup CPU time:        22.29 seconds
+|  Total CPU time:           23.90 seconds     0.01 hours
+
+|  Setup wall time:           2    seconds
+|  NonSetup wall time:       22    seconds
+|  Total wall time:          24    seconds     0.01 hours

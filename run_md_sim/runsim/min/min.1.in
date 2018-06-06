@@ -1,0 +1,12 @@
+trpcage 
+ &cntrl
+  imin   = 1,
+  maxcyc = 5000,
+  ncyc   = 1000,
+  ntb    = 1,
+  ntr    = 1,
+  ntpr   = 1,
+  cut    = 8.0
+  restraint_wt=10.0, ! force constant for restraints
+  restraintmask=':1-20,@CA,C,O,N', ! backbone atoms restrained
+/

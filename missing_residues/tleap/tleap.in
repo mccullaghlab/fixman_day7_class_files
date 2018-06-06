@@ -1,0 +1,18 @@
+source leaprc.ff14SB
+loadAmberParams frcmod.ionsjc_tip3p
+
+# Load the PDBs
+u1 = loadpdb 4wei_fill.B99990001.pdb
+
+#solvate the system
+solvateOct u1 TIP3PBOX 10.0 
+
+#add counterions to neutralize the system
+##How did I know to add Na+? Can run in tleap interactive once, load the pdb as u1, then use the command charge u1 to find the total charge of the unit
+addIonsRand u1 Na+ 0 
+
+#save output files
+saveAmberParm u1 4wei.final.parm7 4wei.final.rst7
+
+#Quit
+quit 

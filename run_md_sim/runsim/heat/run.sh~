@@ -1,0 +1,17 @@
+#!/bin/bash
+#SBATCH --job-name=heat 
+#SBATCH --output=job.log
+#SBATCH --time=48:00:00
+#SBATCH --nodes=1 
+#SBATCH --partition=mccullagh-gpu
+#SBATCH --gres=gpu:titan:1
+#SBATCH --reservation=workshop_gpu
+
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/software/usr/gcc-4.9.2/lib64"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/software/usr/hpcx-v1.2.0-292-gcc-MLNX_OFED_LINUX-2.4-1.0.0-redhat6.6/ompi-mellanox-v1.8/lib"
+export AMBERHOME="/mnt/lustre_fs/users/mjmcc/apps/amber14"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:$AMBERHOME/lib"
+export LD_LIBRARY_PATH="$LD_LIBRARY_PATH:/usr/local/cuda-7.5/lib64"
+
+pmemd.cuda -O -i heat.1.in -o heat.1.out -p ../../tleap/trpcage.parm7 -c ../min/min.2.rst7 -ref ../min/min.2.rst7 -r heat.1.rst7 -x heat.1.nc
+pmemd.cuda -O -i heat.2.in -o heat.2.out -p ../../tleap/trpcage.parm7 -c heat.1.rst7 -ref heat.1.rst7 -r heat.2.rst7 -x heat.2.nc
